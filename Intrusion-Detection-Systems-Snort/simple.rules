@@ -1,0 +1,4 @@
+alert icmp any any -> any any (msg:"ICMP connection attempt"; sid:1000010; rev:1;)
+alert ip any any -> any any (msg:"Packet containing hello"; content:"hello"; sid:1000011; rev:1;)
+alert ip any any <> any ![0:1023] (msg:"Traffic between non-root ports"; sid:1000012; rev:1;)
+alert tcp any any -> any any (msg:"SSH Brute Force Attack Detected"; flow:to_server,established; content:"SSH-"; detection_filter: track by_src, count 10, seconds 600; sid:1000013; rev:1;)

@@ -1,0 +1,67 @@
+Assignment 6 - msiotos 2016030030 - gangelopoulos 2016030083
+
+Installation & Execution
+
+Following the github repository guidelines, we installed all the dependencies required one by one and finaly we installed Snort++ (Version 3.1.76.0).
+In order for the alerts to show on our terminal, we had to edit our conf file (snort.lua) using sudo nano (as it is read-only) and un-comment the type of alert that we wanted to see.
+We chose alert_full = { }.
+For the execution of rules 1-3 we run: $mypath/bin/snort -c $mypath/etc/snort/snort.lua -R /path/to/simple.rules -r /path/to/test_pcap_5mins.pcap where $mypath was the install path (in our case /home/snorty) and /path/to/ was the path that the rule and the pcap file were saved.
+For the execution of rule 4 we run: $mypath/bin/snort -c $mypath/etc/snort/snort.lua -R /path/to/simple.rules -r /path/to/sshguess.pcap
+For the execution of rule 5 we downloaded the snort3-community.rules and went to our conf file and added: include = '/home/msiotos/Downloads/snort3-community-rules/snort3-community.rules', to the "5.configure detection" tab. All we had to do then, was run snort with the .conf file and our pcap file.
+
+Rules
+
+Here is a short description of the rules we implemented.
+The notes below are universal for all rules.
+
+- Every rule starts with alert.
+- Sid is a unique number corresponding to each rule, so that it doesn't cause confusion.
+- Every rule has a unique message based on the assignment demands.
+- Revs refer to how many rule revisions we have done.
+
+RULE #1: alert icmp any any -> any any (msg:"ICMP connection attempt"; sid:1000010; rev:1;)
+
+
+- "icmp": refers to icmp protocol traffic.
+- "any any": traffic from *any* source IP and from *any* source port.
+- "-> any any": traffic to *any* destination IP and to *any* destination port.
+
+RULE #2: alert ip any any -> any any (msg:"Packet containing hello"; content:"hello"; sid:1000011; rev:1;)
+
+- "ip": refers to any IP packet (TCP, UDP, ICMP, etc.)
+- "any any": traffic from *any* source IP and from *any* source port.
+- "-> any any": traffic to *any* destination IP and to *any* destination port.
+- "content:"hello"": checks whether the specified content matches inside the payload of the packet.
+
+RULE #3: alert ip any any <> any ![0:1023] (msg:"Traffic between non-root ports"; sid:1000012; rev:1;)
+
+- "ip": refers to any IP packet (TCP, UDP, ICMP, etc.)
+- "any any": traffic from *any* source IP and from *any* source port.
+- "<> any ![0:1023]": Bidirectional traffic going from non-root ports to non-root ports and vice versa. We used ![0:1023] to exclude the port numbers between 0 and 1023.
+
+RULE #4: alert tcp any any -> any any (msg:"SSH Brute Force Attack Detected"; flow:to_server,established; content:"SSH-"; detection_filter: track by_src, count 10, seconds 600; sid:1000013; rev:1;)
+
+- "tcp": refers to tcp protocol traffic. (SSH operates over the TCP transport layer)
+- "any any": traffic from *any* source IP and from *any* source port.
+- "-> any any": traffic to *any* destination IP and to *any* destination port.
+- "flow:to_server,established;": this indicates that the flow of the tcp traffic goes to the server side of the connection with an established state.
+- "content:"SSH-"": Looks for the string SSH- in the payload.
+- "detection_filter: track by_src, count 10, seconds 600": it filters the matches to occur only once per source IP, and if we have 10 or more occurrences within 600 seconds(10 minutes).
+
+for RULE #5, we downloaded snort3-community-rules.tar.gz from the snort official website, extracted it and we had the snort3-community.rules file. Then, we run snort as stated above.
+
+Results
+
+For the rules that refer to the test_pcap_5mins.pcap file (1-3 rules) as we see in the detection section of the output, we have:
+2 alerts for packets containing "Hello".
+34 alerts for ICMP connection attempts.
+9143 alerts for traffic between non-root ports.
+
+For the 4th rule that refer to the sshguess.pcap file we got 1 alert of an SSH brute force attack attempt.
+
+For the 5th rule, 102 alerts were triggered.
+These involved 4 different classifications: Detection of a Network Scan, Attempted Information Leak, Potential Corporate Privacy Violation, Misc activity.
+The snort rule documentation helped us clear out which of these alerts implied malicious behavior and which were mostly false-positives.
+Out of all the alertes that were triggered, the one that shows there is malicious behavior is the "INDICATOR-SCAN UPnP service discover attempt" which falls on the Network Scan category.
+As we read, this event indicates that an attempt has been made to scan a host. This may be the prelude to an attack.
+Scanners are used to ascertain which ports a host may be listening on, whether or not the ports are filtered by a firewall and if the host is vulnerable to a particular exploit.
