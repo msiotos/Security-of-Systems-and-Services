@@ -9,7 +9,7 @@ Code Injection Attacks on the Web
 ### Assignment 4: 
 Network traffic monitoring using the Packet Capture library
 ### Assignment 5: 
-Simple adblocking mechanism.
+Simple adblocking mechanism with iptables.
 ### Assignment 6: 
 Intrusion Detection Systems - Snort
 ### Assignment 7: 
