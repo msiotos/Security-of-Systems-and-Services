@@ -1,0 +1,53 @@
+﻿Assignment 4 - msiotos 2016030030 - gangelopoulos 2016030083
+
+-In order for the assignment to work, you need to type:
+1.make clean
+2.make all
+3.The corresponding arguments
+
+IMPORTANT NOTES FOR EXECUTION 
+
+- In order to filter you need to put the -f argument first before the -r argument to work.
+Here are some execution samples:
+sudo ./pcap_ex -i enp0s3
+./pcap_ex -r test_pcap_5mins.pcap
+./pcap_ex -h (for options message + available devices)
+./pcap_ex -f ip:192.168.3.131 -r test_pcap_5mins.pcap
+./pcap_ex -f port:17500 -r test_pcap_5mins.pcap
+./pcap_ex -f udp -r test_pcap_5mins.pcap
+sudo ./pcap_ex -f ip:10.0.2.15 -i enp0s3
+sudo ./pcap_ex -f port:80 -i enp0s3
+sudo ./pcap_ex -f tcp -i enp0s3
+
+You will need to press Ctrl+C to end the live execution.
+The ip, port provided above are an example and results won’t always show up using these, so you might need to test different ones for the online implementation.
+
+IMPORTANT FOR FILTERING. 
+
+- Our code can filter either if it’s tcp/udp protocol, the desired port number(either source/dest) or the desired IP (either source/dest).
+The filters are as follows and must be written accordingly.
+"tcp" for TCP filter
+"udp" for UDP filter
+"ip:######" where ###### is the actual IP address you want filtered
+"port:######" where ###### is the actual port number you want filtered
+
+ANSWERS
+
+Question 9
+The payload is located in memory after the headers in the packet. To find it, we calculate the total header size and add this size to the base address of the packet. The resulting address points to the start of the payload data in memory.
+
+Question 10
+Yes, we can tell if incoming TCP packets are retransmissions.In our code we identify potential TCP retransmissions by comparing sequence numbers and TCP flags within the same TCP flow. If a sequence number gap is detected with appropriate flags, it is considered a TCP retransmission.The check_retr function takes the source IP address, destination IP address, TCP header (struct tcphdr), and payload length as parameters.
+It creates a new structure (retr) to store information about the potential retransmission.
+The function then adds this structure to the list of TCP flows (retrans_glb) using the add_trans function.
+The add_trans function adds a new TCP flow to the list of flows (retrans_glb).
+It checks if there is an existing flow with the same source and destination IP addresses, as well as matching source and destination ports.
+If a matching flow is found, it creates a new structure (retr) containing information about the current and previous TCP packets in the flow.
+This new structure is then added to the list of current flows (current_flow).
+While processing subsequent packets, if it detects a potential retransmission based on sequence numbers, flags, and payload, it prints a message indicating a TCP retransmission.
+Then we check if the current TCP packet has the ACK flag set (new->tcp->ack == 1) and whether the sequence number of the current packet is not immediately following the acknowledgment of the previous packet (current_flow->tcp->seq - 1 != new->tcp->ack_seq).
+If these conditions are met and the current packet has TCP flags indicating a potential retransmission (new->tcp->syn == 1 || new->tcp->fin == 1 || new->payload > 0), it prints a message indicating a TCP retransmission.
+
+Question 11
+Identifying retransmissions for UDP packets is not applicable in the usual sense, as the UDP protocol itself does not support such features. Retransmission-related logic is more relevant to connection-oriented protocols like TCP, where retransmissions are used to ensure reliable data delivery.
+
