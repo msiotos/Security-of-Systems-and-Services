@@ -1,0 +1,23 @@
+Assignment 5 - msiotos 2016030030 - gangelopoulos 2016030083
+
+Execution:
+chmod +x adblock.sh
+sudo ./adblock.sh -(your argument)
+
+Implementation
+We implement a simple adblocking mechanism using iptables commands and rules.
+We parse the domain names from the file given, resolve them to their IP addresses in a new IPAddresses file and reject incoming and outgoing traffic from/to them.
+After that, we save the rules in the new adblockRules file and load them in order to apply them. We then implement the list and reset option, with the use of iptables.
+We added comments inside the code, so the implmentation is more clear.
+
+Question 1
+
+Our adblock mechanism worked as expected.
+We have tested our adblocker in https://esportal.gr/ , a friend's website which we knew had some ads and the adblocker successfully blocked every ad.
+We have also tested our adblocker in https://canyoublockit.com/, a website perfect for our task as it focuses on testing how good an adblocker is. Our adblocker once again blocked all ads except one. When we ran the Simple Test, the last ad of 10 secs was still present. The type of this ad is called interstitial. Interstitial ads are often times dynamically loaded and cover the whole screen, thus the adblocker finds it impossible to proactively block.
+Other times, these types of ads have countermeasures to adblocking, measures that our basic adblocker cannot intercept and counter.
+These are only some of the reasons why ads persist even with our adblocker.
+
+Notes
+
+After we had already implemented the task, we read in the chat section of eclass that we also should implement it for the IPv6 addresses, so we had to add it. We used the host command again to obtain the IP addresses but this time we noticed that the IP is the 5th field so we filtered accordingly with the awk command. There are about ~70 IPv6 addresses. We then used ip6tables the same way we used iptables for the rest of the code. In order to save the rules we initially used iptables-save > "$adblockRules" and then ip6tables-save >> "$adblockRules" to append the adblockRules file without overwriting the iptables rules. This way though, we couldn't implement the iptables/ip6tables-restore commands cause it showed error since iptables-restore wouldn't recognize reject type "icmp6-port-unreachable" and ip6tables-restore wouldn't recognize reject type "icmp-port-unreachable". So, we decided to implement the saving and loading the rules with two adblockRules files(for IPv4 & IPv6) and that way everything ran smoothly and the adblock did its job.
